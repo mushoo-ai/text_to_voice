@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Text to Voice App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #74ebd5, #ACB6E5);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .intro {
+            font-size: 14px;
+            margin-bottom: 20px;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+            resize: none;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+            background-color: #f8f8f8;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(to right, #36d1dc, #5b86e5);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(to right, #5b86e5, #36d1dc);
+            transform: scale(1.03);
+        }
+
+        audio {
+            margin-top: 20px;
+            width: 100%;
+            display: none;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="intro">
+            <strong>Musharraf Hussain</strong><br>
+            FUUAST Karachi<br>
+            This is my First Project.
+        </div>
+
+        <h2>🎤 Text to Voice Converter</h2>
+
+        <form id="voiceForm">
+            <textarea id="text" name="text" placeholder="Hi, I am Musharraf from Federal Urdu University of Arts, Science & Technology, Karachi." rows="4" required></textarea>
+            <select id="lang" name="lang">
+                <option value="en">English</option>
+                <option value="ur">Urdu</option>
+            </select>
+            <button type="submit">🔊 Speak</button>
+        </form>
+        <audio id="player" controls></audio>
+    </div>
+
+    <script>
+        const form = document.getElementById('voiceForm');
+        const player = document.getElementById('player');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            await fetch('/speak', {
+                method: 'POST',
+                body: formData
+            });
+
+            const audioURL = '/audio?' + new Date().getTime();
+            player.src = audioURL;
+            player.style.display = 'block';
+            player.load();
+            player.play();
+        });
+    </script>
+</body>
+</html>
