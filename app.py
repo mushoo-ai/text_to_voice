@@ -5,12 +5,16 @@ import asyncio
 import os
 
 app = Flask(__name__)
+<<<<<<< HEAD
 
 # Use absolute path in PythonAnywhere
 AUDIO_PATH = os.path.expanduser("~/static/output.mp3")
 
 # Ensure directory exists
 os.makedirs(os.path.dirname(AUDIO_PATH), exist_ok=True)
+=======
+AUDIO_PATH = "static/output.mp3"
+>>>>>>> cbb155a4198789c26b07ef30caba1382ce378b60
 
 @app.route('/')
 def index():
@@ -21,6 +25,7 @@ def speak():
     text = request.form['text']
     lang = request.form['lang']
 
+<<<<<<< HEAD
     try:
         if lang == 'ur':
             tts = gTTS(text=text, lang='ur')
@@ -47,3 +52,26 @@ def audio():
 
 if __name__ == '__main__':
     app.run(debug=True)
+=======
+    if lang == 'ur':
+        tts = gTTS(text=text, lang='ur')
+        tts.save(AUDIO_PATH)
+    elif lang == 'en':
+        async def generate():
+            communicate = edge_tts.Communicate(text=text, voice="en-US-GuyNeural")
+            await communicate.save(AUDIO_PATH)
+        asyncio.run(generate())
+
+    return 'done'
+
+@app.route('/audio')
+def audio():
+    if os.path.exists(AUDIO_PATH):
+        return send_file(AUDIO_PATH, mimetype='audio/mpeg')
+    else:
+        return "Audio not found", 404
+
+if __name__ == '__main__':
+    app.run(debug=False, host='0.0.0.0', port=10000)
+
+>>>>>>> cbb155a4198789c26b07ef30caba1382ce378b60
