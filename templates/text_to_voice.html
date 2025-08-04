@@ -5,12 +5,7 @@
     <title>Text to Voice App</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(to right, #74ebd5, #ACB6E5);
@@ -19,7 +14,6 @@
             justify-content: center;
             align-items: center;
         }
-
         .container {
             background-color: #fff;
             padding: 30px;
@@ -28,40 +22,53 @@
             width: 100%;
             max-width: 450px;
             text-align: center;
+            position: relative;
         }
-
-        .intro {
+        .creator-info {
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            background: linear-gradient(to right, #36d1dc, #5b86e5);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+        .creator-photo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+        .creator-name {
+            font-weight: 600;
             font-size: 14px;
-            margin-bottom: 20px;
-            color: #555;
-            line-height: 1.4;
         }
-
-        h2 {
-            margin-bottom: 20px;
-            color: #333;
+        .project-badge {
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            background: #ff6b6b;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
         }
-
-        textarea {
+        textarea, select {
             width: 100%;
             padding: 12px;
             margin-top: 12px;
             border-radius: 10px;
             border: 1px solid #ccc;
             font-size: 15px;
-            resize: none;
         }
-
-        select {
-            width: 100%;
-            padding: 12px;
-            margin-top: 12px;
-            border-radius: 10px;
-            border: 1px solid #ccc;
-            font-size: 15px;
-            background-color: #f8f8f8;
-        }
-
+        textarea { resize: none; height: 120px; }
         button {
             margin-top: 20px;
             padding: 12px 24px;
@@ -74,42 +81,32 @@
             cursor: pointer;
             transition: 0.3s ease;
         }
-
-        button:hover {
-            background: linear-gradient(to right, #5b86e5, #36d1dc);
-            transform: scale(1.03);
-        }
-
-        audio {
-            margin-top: 20px;
-            width: 100%;
-            display: none;
-        }
-
-        @media (max-width: 500px) {
-            .container {
-                margin: 20px;
-            }
-        }
+        button:hover { transform: scale(1.03); }
+        button:disabled { opacity: 0.7; }
+        audio { margin-top: 20px; width: 100%; }
+        .status { margin-top: 10px; color: #666; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="intro">
-            <strong>Musharraf Hussain</strong><br>
-            FUUAST Karachi<br>
-            This is my First Project.
+        <!-- Creator Info Badge -->
+        <div class="creator-info">
+            <img src="/static/images/profile.jpg" alt="Musharraf Hussain" class="creator-photo">
+            <div class="creator-name">Musharraf Hussain</div>
         </div>
-
-        <h2>🎤 Text to Voice Converter</h2>
-
+        
+        <!-- Project Badge -->
+        <div class="project-badge">My First Project</div>
+        
+        <br><h2>🎤 Text to Voice Converter</h2>
         <form id="voiceForm">
-            <textarea id="text" name="text" placeholder="Hi, I am Musharraf from Federal Urdu University of Arts, Science & Technology, Karachi." rows="4" required></textarea>
+            <textarea id="text" name="text" placeholder="Enter your text here..." required></textarea>
             <select id="lang" name="lang">
                 <option value="en">English</option>
                 <option value="ur">Urdu</option>
             </select>
-            <button type="submit">🔊 Speak</button>
+            <button type="submit" id="submitBtn">🔊 Speak</button>
+            <div class="status" id="status"></div>
         </form>
         <audio id="player" controls></audio>
     </div>
@@ -117,21 +114,40 @@
     <script>
         const form = document.getElementById('voiceForm');
         const player = document.getElementById('player');
+        const statusDiv = document.getElementById('status');
+        const submitBtn = document.getElementById('submitBtn');
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            const formData = new FormData(form);
-            await fetch('/speak', {
-                method: 'POST',
-                body: formData
-            });
-
-            const audioURL = '/audio?' + new Date().getTime();
-            player.src = audioURL;
-            player.style.display = 'block';
-            player.load();
-            player.play();
+            
+            submitBtn.disabled = true;
+            statusDiv.textContent = "Processing...";
+            player.style.display = 'none';
+            
+            try {
+                const formData = new FormData(form);
+                const response = await fetch('/speak', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    player.src = '/audio?t=' + new Date().getTime();
+                    player.style.display = 'block';
+                    player.play().catch(e => {
+                        statusDiv.textContent = "Click the play button to listen";
+                    });
+                    statusDiv.textContent = "Ready!";
+                } else {
+                    const error = await response.text();
+                    statusDiv.textContent = `Error: ${error}`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.textContent = "Network error occurred";
+            } finally {
+                submitBtn.disabled = false;
+            }
         });
     </script>
 </body>
